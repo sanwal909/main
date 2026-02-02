@@ -2,6 +2,15 @@ import os
 import logging
 import random
 import string
+import sys
+
+# Try to handle imghdr issue
+try:
+    import imghdr
+except ImportError:
+    # Python 3.13 में imghdr removed है
+    import filetype as imghdr
+    
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
@@ -70,24 +79,6 @@ Password = `0plm0plm`
     
     await query.message.reply_text(message, parse_mode='Markdown', reply_markup=reply_markup)
 
-# Show username in popup
-async def show_popup(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    data = query.data
-    
-    if data.startswith('show_'):
-        username = data.replace('show_', '')
-        # Show in popup with copy instructions
-        await query.answer(
-            f"👤 USERNAME:\n\n"
-            f"{username}\n\n"
-            f"📋 Copy steps:\n"
-            f"1. Long press here\n"
-            f"2. Select 'Copy'\n"
-            f"3. Or go back and copy from main message",
-            show_alert=True
-        )
-
 # Quick generate command
 async def quick_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = generate_username()
@@ -101,10 +92,10 @@ async def quick_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 # Error handler
-async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Exception while handling an update: {context.error}")
 
-# Main function
+# Main function - SIMPLIFIED VERSION
 def main():
     if BOT_TOKEN == "YOUR_BOT_TOKEN_HERE":
         print("❌ ERROR: Set BOT_TOKEN as environment variable!")
@@ -114,49 +105,38 @@ def main():
         return
     
     try:
-        # Simple Application creation
+        # Create application
         app = Application.builder().token(BOT_TOKEN).build()
         
-        # Handlers
+        # Add handlers
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("gen", quick_command))
         app.add_handler(CallbackQueryHandler(generate_handler, pattern='^generate$'))
-        app.add_handler(CallbackQueryHandler(show_popup, pattern='^show_'))
         
-        # Error handler
+        # Add error handler
         app.add_error_handler(error_handler)
         
         print("🤖 BOT STARTING...")
-        print(f"✅ Token loaded successfully")
+        print(f"✅ Token: {BOT_TOKEN[:10]}...")
         
-        # Railway के लिए webhook setup
-        port = int(os.environ.get("PORT", 8080))
-        railway_url = os.environ.get("RAILWAY_STATIC_URL", "")
-        
-        if railway_url:
-            # Webhook mode for Railway
-            print(f"🌐 Webhook mode enabled")
-            print(f"📡 URL: {railway_url}")
+        # Check if running on Railway
+        if "RAILWAY_ENVIRONMENT" in os.environ:
+            print("🚂 Running on Railway")
+            port = int(os.environ.get("PORT", 8080))
             
-            # Set webhook
-            async def set_webhook():
-                await app.bot.set_webhook(f"{railway_url}/{BOT_TOKEN}")
-            
-            # Run with webhook
-            app.run_webhook(
-                listen="0.0.0.0",
-                port=port,
-                webhook_url=f"{railway_url}/{BOT_TOKEN}",
-                secret_token=BOT_TOKEN
-            )
+            # Use polling instead of webhook for simplicity
+            print("🔄 Starting polling...")
+            app.run_polling()
         else:
-            # Polling mode for development
-            print("🔄 Running in polling mode...")
+            # Local development
+            print("💻 Running locally")
             app.run_polling()
             
     except Exception as e:
         logger.error(f"Failed to start bot: {e}")
-        raise
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
