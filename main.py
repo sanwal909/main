@@ -2,7 +2,6 @@ import os
 import logging
 import random
 import string
-import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
@@ -115,6 +114,7 @@ def main():
         return
     
     try:
+        # Simple Application creation
         app = Application.builder().token(BOT_TOKEN).build()
         
         # Handlers
@@ -127,22 +127,30 @@ def main():
         app.add_error_handler(error_handler)
         
         print("🤖 BOT STARTING...")
-        print(f"✅ Token: {BOT_TOKEN[:10]}...")
+        print(f"✅ Token loaded successfully")
         
-        # Railway के लिए PORT variable check करें
+        # Railway के लिए webhook setup
         port = int(os.environ.get("PORT", 8080))
+        railway_url = os.environ.get("RAILWAY_STATIC_URL", "")
         
-        # Use webhook for Railway
-        if "RAILWAY_STATIC_URL" in os.environ:
-            url = os.environ.get("RAILWAY_STATIC_URL")
+        if railway_url:
+            # Webhook mode for Railway
+            print(f"🌐 Webhook mode enabled")
+            print(f"📡 URL: {railway_url}")
+            
+            # Set webhook
+            async def set_webhook():
+                await app.bot.set_webhook(f"{railway_url}/{BOT_TOKEN}")
+            
+            # Run with webhook
             app.run_webhook(
                 listen="0.0.0.0",
                 port=port,
-                url_path=BOT_TOKEN,
-                webhook_url=f"{url}/{BOT_TOKEN}"
+                webhook_url=f"{railway_url}/{BOT_TOKEN}",
+                secret_token=BOT_TOKEN
             )
         else:
-            # Local polling for development
+            # Polling mode for development
             print("🔄 Running in polling mode...")
             app.run_polling()
             
