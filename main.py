@@ -23,9 +23,9 @@ def generate_username():
              'william', 'benjamin', 'lucas', 'henry', 'alexander', 'sebastian']
     
     name = random.choice(names)
-    name_part = name[:random.randint(4, 7)]
-    numbers = str(random.randint(10, 999))
-    letters = ''.join(random.choices(string.ascii_lowercase, k=2))
+    name_part = name[:random.randint(5, 7)]
+    numbers = str(random.randint(99, 999))
+    letters = ''.join(random.choices(string.ascii_lowercase, k=4))
     
     return f"{name_part}{numbers}_{letters}"
 
