@@ -16,16 +16,18 @@ logging.basicConfig(
 
 # Generate username
 def generate_username():
-    names = ['aarav', 'vivaan', 'aditya', 'arjun', 'sai', 'reyansh', 'dhruv', 'kabir',
-             'krishna', 'rohan', 'ishaan', 'yash', 'aryan', 'dev', 'raj', 'prem',
-             'anaya', 'diya', 'ira', 'anika', 'myra', 'sara', 'aaradhya', 'avni',
-             'alex', 'max', 'leo', 'noah', 'liam', 'oliver', 'elijah', 'james',
-             'william', 'benjamin', 'lucas', 'henry', 'alexander', 'sebastian']
-    
+    names = [
+    'aayan', 'vihaan', 'rudra', 'atharv', 'shivansh', 'arnav', 'lakshya', 'vedant',
+    'madhav', 'keshav', 'advait', 'nikhil', 'harsh', 'omkar', 'samar', 'pranav',
+    'riya', 'kiara', 'isha', 'tanvi', 'meera', 'kavya', 'navya', 'prisha',
+    'ethan', 'mason', 'logan', 'jack', 'owen', 'aiden', 'caleb', 'samuel',
+    'daniel', 'matthew', 'joseph', 'david', 'andrew', 'julian'
+]
+
     name = random.choice(names)
-    name_part = name[:random.randint(5, 7)]
-    numbers = str(random.randint(99, 999))
-    letters = ''.join(random.choices(string.ascii_lowercase, k=4))
+    name_part = name[:random.randint(3, 7)]
+    numbers = str(random.randint(999, 9999))
+    letters = ''.join(random.choices(string.ascii_lowercase, k=3))
     
     return f"{name_part}{numbers}_{letters}"
 
